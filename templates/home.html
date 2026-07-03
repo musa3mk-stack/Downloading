@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .search-container { background-color: #14141b; padding: 20px; border-radius: 12px; border: 1px solid #232330; margin-bottom: 30px; }
+    .section-title { font-size: 14px; font-weight: bold; color: #8e8e93; margin-bottom: 12px; text-transform: uppercase; }
+    .search-block { display: flex; flex-direction: column; gap: 12px; width: 100%; margin-bottom: 25px; }
+    .custom-input { width: 100%; padding: 15px; border: 1px solid #3b3b54; background-color: #0c0c0e; color: white; font-size: 16px; border-radius: 8px; outline: none; }
+    .custom-input:focus { border-color: #e50914; }
+    .movie-list { display: flex; flex-direction: column; gap: 15px; }
+    .movie-card { background-color: #14141b; border-radius: 12px; overflow: hidden; border: 1px solid #232330; display: flex; padding: 12px; gap: 15px; }
+    .movie-thumb { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; background-color: #232330; }
+    .movie-details { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+    .movie-title { font-size: 18px; font-weight: bold; color: white; }
+    .action-row { display: flex; gap: 10px; margin-top: 8px; }
+    .action-row .btn { padding: 10px; font-size: 13px; }
+</style>
+
+<div class="search-container">
+    <div class="section-title">🔍 Search Movies</div>
+    <form action="{{ url_for('home') }}" method="GET" class="search-block">
+        <input type="text" id="searchBox" name="search" class="custom-input" placeholder="Type movie name here to search...">
+        <button type="submit" class="btn btn-danger">Execute Search</button>
+    </form>
+
+    <div class="section-title" style="margin-top: 25px;">🔗 Social Video Link Downloader (Facebook, etc.)</div>
+    <div class="search-block">
+        <input type="text" id="linkInput" class="custom-input" placeholder="Paste Facebook, TikTok, or video link here...">
+        <button type="button" class="btn btn-outline" onclick="processVideoLink()">Analyze & Fetch Link</button>
+    </div>
+    
+    <div id="linkResult" style="display: none; margin-top: 15px; background: #0c0c0e; padding: 15px; border-radius: 8px; border: 1px dashed #e50914;">
+        <h4 style="font-size: 14px; color: #fff; margin-bottom: 5px;">Link Captured!</h4>
+        <p style="font-size: 12px; color: #8e8e93; margin-bottom: 15px; word-break: break-all;" id="resUrl"></p>
+        <button class="btn btn-danger" onclick="downloadFetchedLink()">Go to Download Page</button>
+    </div>
+</div>
+
+<h3 style="font-size: 18px; margin-bottom: 15px;">Online Movies</h3>
+<div class="movie-list">
+    {% for movie in movies %}
+    <div class="movie-card">
+        <img src="{{ movie.thumbnail_url }}" class="movie-thumb" alt="Poster">
+        <div class="movie-details">
+            <div>
+                <h4 class="movie-title">{{ movie.title }}</h4>
+            </div>
+            <div class="action-row">
+                <a href="{{ url_for('view_movie', movie_id=movie.id) }}" class="btn btn-outline">Play</a>
+                <a href="{{ url_for('download_movie', movie_id=movie.id) }}" class="btn btn-danger">Download</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.getElementById('nav-home').classList.add('active');
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('focus') === 'search') {
+        document.getElementById('searchBox').focus();
+        document.getElementById('nav-home').classList.remove('active');
+        document.getElementById('nav-search').classList.add('active');
+    }
+
+    function processVideoLink() {
+        const link = document.getElementById('linkInput').value.trim();
+        if(!link) { alert('Please paste a video link first!'); return; }
+        document.getElementById('resUrl').innerText = link;
+        document.getElementById('linkResult').style.display = 'block';
+    }
+
+    function downloadFetchedLink() {
+        const link = document.getElementById('linkInput').value.trim();
+        window.open('https://savefrom.net' + encodeURIComponent(link), '_blank');
+    }
+</script>
+{% endblock %}
