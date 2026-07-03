@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ms Video PRO v4.0</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background-color: #f0f2f5; color: #1a1a1a; padding-bottom: 90px; }
+        .top-header { background-color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #dcdcdc; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .app-title { color: #e50914; font-size: 24px; font-weight: bold; text-decoration: none; }
+        .container { max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        .app-page { display: none; }
+        .app-page.active { display: block; }
+        
+        /* Cards & Styling layout */
+        .card-box { background-color: #ffffff; padding: 20px; border-radius: 12px; border: 1px solid #e1e4e8; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .card-title { font-size: 14px; font-weight: bold; color: #65676b; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .custom-input { width: 100%; padding: 14px; border: 1px solid #cccccc; background-color: #ffffff; color: #1a1a1a; font-size: 16px; border-radius: 8px; outline: none; margin-bottom: 12px; }
+        .custom-input:focus { border-color: #e50914; box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.1); }
+        
+        /* Interactive Buttons */
+        .btn { display: block; width: 100%; padding: 14px; font-size: 15px; font-weight: bold; text-align: center; text-decoration: none; border-radius: 8px; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-danger { background-color: #e50914; color: white; box-shadow: 0 4px 10px rgba(229, 9, 20, 0.2); }
+        .btn-danger:hover { background-color: #b80710; }
+        .btn-outline { background-color: #e4e6eb; color: #1a1a1a; border: 1px solid #ccd0d5; }
+        .btn-outline:hover { background-color: #d8dadf; }
+        
+        /* Tab Navigation Items */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background-color: #ffffff; border-top: 1px solid #dcdcdc; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #65676b; font-size: 12px; font-weight: 500; width: 33.3%; cursor: pointer; }
+        .nav-item.active { color: #e50914; font-weight: bold; }
+        .nav-icon { font-size: 22px; margin-bottom: 4px; }
+        
+        /* File & Folder List Containers (MX-Player Interface style) */
+        .folder-item { background-color: #ffffff; padding: 16px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #e1e4e8; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .folder-info { display: flex; align-items: center; gap: 12px; }
+        .folder-icon { font-size: 28px; }
+        .folder-name { font-weight: 600; font-size: 16px; color: #1a1a1a; }
+        .video-count { font-size: 13px; color: #65676b; }
+        
+        /* Matrix Grid Render for Videos with Metadata Previews */
+        .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+        .video-card { background: #ffffff; border: 1px solid #e1e4e8; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .video-thumbnail-container { position: relative; width: 100%; aspect-ratio: 16/9; background-color: #000; overflow: hidden; }
+        .hidden-video-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .video-title-text { padding: 8px; font-size: 13px; font-weight: 600; color: #1a1a1a; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 44px; line-height: 1.4; }
+        .video-card-btn { margin: 8px; padding: 6px; font-size: 12px; border-radius: 4px; font-weight: bold; }
+        
+        video#videoPlayer, video#downloadedPlayer { width: 100%; aspect-ratio: 16/9; background-color: #000000; border-radius: 10px; margin-top: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+        .back-btn { margin-bottom: 15px; padding: 8px 16px; font-size: 13px; width: auto; display: inline-flex; align-items: center; gap: 5px; }
+        .status-msg { margin-top: 10px; font-size: 14px; color: #e50914; font-weight: 500; display: none; }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <a class="app-title" href="#">Ms Video</a>
+        <span style="font-size: 12px; color: #65676b; background: #e4e6eb; padding: 4px 10px; border-radius: 6px; font-weight: 600;">PRO v4.0</span>
+    </header>
+
+    <div class="container">
+        
+        <!-- PAGE 1: HOME (LINK EXTRACTOR & DOWNLOADING REGISTRY) -->
+        <div id="page-home" class="app-page active">
+            <div class="card-box">
+                <div class="card-title">🔗 Cloud Link Downloader</div>
+                <input type="text" id="linkInput" class="custom-input" placeholder="Paste Facebook, YouTube, or TikTok video link...">
+                <button type="button" id="dlBtn" class="btn btn-danger" onclick="startDownload()">Extract & Download Video</button>
+                <div id="downloadStatus" class="status-msg"></div>
+            </div>
+            
+            <div class="card-box" id="recentDownloadBox" style="display: none;">
+                <div class="card-title">▶️ Playing Extracted Streaming Video</div>
+                <video id="downloadedPlayer" controls></video>
+            </div>
+        </div>
+
+        <!-- PAGE 2: LOCAL DEVICE FILTERS (SEARCH) -->
+        <div id="page-search" class="app-page">
+            <div class="card-box">
+                <div class="card-title">🔍 Search Devices</div>
+                <input type="text" id="searchBox" class="custom-input" placeholder="Search loaded folder movies by name..." oninput="filterLocalVideos()">
+                <div id="searchResults" class="video-grid"></div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: CLIENT-SIDE STORAGE SCANNER (MX STORAGE PLAYER INTERFACE) -->
+        <div id="page-library" class="app-page">
+            <div class="card-box">
+                <div class="card-title">📂 Open Individual Video File</div>
+                <input type="file" id="videoUpload" accept="video/*" class="custom-input" style="border: 1px dashed #e50914; background: #f8f9fa;">
+                <video id="videoPlayer" controls style="display: none;"></video>
+            </div>
+
+            <!-- THE LOCAL DIRECTORY DISCOVERY ENGINE -->
+            <div class="card-box">
+                <div class="card-title" id="library-view-title">📁 Device Directory Storage (MX Scanner)</div>
+                <p style="font-size: 13px; color: #65676b; margin-bottom: 12px;">Click below to load media folders from your internal device memory.</p>
+                
+                <!-- HTML5 Native Client Directory Scanning Input Hook -->
+                <input type="file" id="directoryScanner" webkitdirectory directory multiple class="custom-input" style="border: 1px dashed #3b3b54; padding: 12px;">
+                
+                <!-- Folders and Inner content visualization blocks -->
+                <div id="foldersContainer">Select a local directory path above to populate list...</div>
+                
+                <div id="folderContentContainer" style="display: none;">
+                    <button class="btn btn-outline back-btn" onclick="backToFolders()">⬅️ Back to Media Folders</button>
+                    <div id="innerFilesList" class="video-grid"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- Bottom Menu Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" id="btn-home" onclick="switchPage('home')">
+            <span class="nav-icon">🏠</span><span>Home</span>
+        </div>
+        <div class="nav-item" id="btn-search" onclick="switchPage('search')">
+            <span class="nav-icon">🔍</span><span>Search</span>
+        </div>
+        <div class="nav-item" id="btn-library" onclick="switchPage('library')">
+            <span class="nav-icon">📥</span><span>Library</span>
+        </div>
+    </nav>
+
+    <script>
+        // Global memory storage to handle scanned files inside the client's browser
+        let localScannedFolders = {};
+        let flatSearchVideoList = [];
+
+        // Smooth tab switching configuration mechanics
+        function switchPage(pageId) {
+            document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.getElementById('btn-' + pageId).classList.add('active');
+        }
+
+        // Play individual video file manually selected by the user
+        document.getElementById('videoUpload').onchange = function(e){
+            if(e.target.files && e.target.files[0]) {
+                const player = document.getElementById('videoPlayer');
+                player.src = URL.createObjectURL(e.target.files[0]);
+                player.style.display = 'block';
+                player.play();
+            }
+        }
+
+        // CLOUD EXTRACTOR ENGINE: Fetches direct links from Render API and handles client-side saving
+        function startDownload() {
+            const urlValue = document.getElementById('linkInput').value.trim();
+            const statusDiv = document.getElementById('downloadStatus');
+            const dlButton = document.getElementById('dlBtn');
+            
+            if(!urlValue) {
+                alert('Please paste an active streaming video link first!');
+                return;
+            }
+            
+            dlButton.disabled = true;
+            statusDiv.style.color = '#e50914';
+            statusDiv.innerText = 'Extracting high-speed link from Render API... please wait...';
+            statusDiv.style.display = 'block';
+            
+            let formData = new FormData();
+            formData.append('url', urlValue);
+            
+            fetch('/download', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    statusDiv.style.color = '#28a745';
+                    statusDiv.innerText = 'Extraction complete! Triggering local system file download...';
+                    
+                    // Trigger native browser/Webview download manager pipeline instantly
+                    const tempDownloadAnchor = document.createElement('a');
+                    tempDownloadAnchor.href = data.download_url;
+                    tempDownloadAnchor.download = data.title + '.mp4';
+                    tempDownloadAnchor.target = '_blank';
+                    document.body.appendChild(tempDownloadAnchor);
+                    tempDownloadAnchor.click();
+                    document.body.removeChild(tempDownloadAnchor);
+                    
+                    // Route video feed straight to home player stream channel
+                    const mainPlayer = document.getElementById('downloadedPlayer');
+                    mainPlayer.src = data.download_url;
+                    document.getElementById('recentDownloadBox').style.display = 'block';
+                    mainPlayer.play();
+                    
+                    dlButton.disabled = false;
+                } else {
+                    statusDiv.innerText = 'Extraction Error: ' + data.error;
+                    dlButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                statusDiv.innerText = 'Network error connecting to cloud engine API.';
+                dlButton.disabled = false;
+            });
+        }
+        // NATIVE CLIENT DIRECTORY SCANNER OPERATIONS (MX PLAYER ENGINE CODES)
+        document.getElementById('directoryScanner').onchange = function(e) {
+            const files = e.target.files;
+            const container = document.getElementById('foldersContainer');
+            
+            localScannedFolders = {};
+            flatSearchVideoList = [];
+            
+            // Loop through all files found inside the chosen path
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Keep only valid video extensions
+                if (file.type.startsWith('video/') || file.name.endsWith('.mp4') || file.name.endsWith('.mkv') || file.name.endsWith('.3gp') || file.name.endsWith('.webm')) {
+                    // Extract relative path to determine folder grouping hierarchy
+                    const pathParts = file.webkitRelativePath.split('/');
+                    let folderName = pathParts.length > 1 ? pathParts[pathParts.length - 2] : "Root Directory";
+                    
+                    if (!localScannedFolders[folderName]) {
+                        localScannedFolders[folderName] = [];
+                    }
+                    
+                    const fileObj = {
+                        name: file.name,
+                        blobUrl: URL.createObjectURL(file), // Generate locally streamable instance URL
+                        rawFile: file
+                    };
+                    
+                    localScannedFolders[folderName].push(fileObj);
+                    flatSearchVideoList.push(fileObj);
+                }
+            }
+            
+            renderFolderLayoutView();
+        };
+
+        function renderFolderLayoutView() {
+            const container = document.getElementById('foldersContainer');
+            let html = '';
+            
+            Object.keys(localScannedFolders).forEach(folderName => {
+                let videos = localScannedFolders[folderName];
+                
+                html += `<div class="folder-item" onclick="openScannedFolder('${folderName}')">
+                    <div class="folder-info">
+                        <span class="folder-icon">📂</span>
+                        <div>
+                            <div class="folder-name">${folderName}</div>
+                            <div class="video-count">${videos.length} videos found</div>
+                        </div>
+                    </div>
+                    <div style="color: #65676b; font-weight: bold;">❯</div>
+                </div>`;
+            });
+
+            if (Object.keys(localScannedFolders).length === 0) {
+                container.innerHTML = '<p style="color:#65676b; padding:10px; text-align:center;">No video folders discovered yet. Please click above to grant scan permission.</p>';
+            } else {
+                container.innerHTML = html;
+            }
+        }
+
+        // POPULATE MX STYLE VIDEO CARDS MATRIX GRAPHICS INTERFACE
+        function openScannedFolder(folderName) {
+            document.getElementById('foldersContainer').style.display = 'none';
+            document.getElementById('folderContentContainer').style.display = 'block';
+            document.getElementById('library-view-title').innerText = "📂 Folder: " + folderName;
+            
+            const innerList = document.getElementById('innerFilesList');
+            let videos = localScannedFolders[folderName];
+            
+            renderVideoGrid(videos, innerList, true);
+        }
+
+        function renderVideoGrid(videoArray, containerElement, isLibraryPage) {
+            if (!videoArray || videoArray.length === 0) {
+                containerElement.innerHTML = '<p style="color:#65676b; padding:10px;">No matching assets found inside this layout channel.</p>';
+                return;
+            }
+
+            let html = '';
+            videoArray.forEach((file, index) => {
+                html += `<div class="video-card">
+                    <div class="video-thumbnail-container">
+                        <!-- Preloads 1 second of metadata directly inside client memory space to render thumbnail -->
+                        <video class="hidden-video-thumb" preload="metadata" muted>
+                            <source src="${file.blobUrl}" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="video-title-text">${file.name}</div>
+                    <button class="btn btn-danger video-card-btn" onclick="triggerDirectPlayback('${file.blobUrl}', ${isLibraryPage})">PLAY NOW</button>
+                </div>`;
+            });
+            containerElement.innerHTML = html;
+            
+            // Advance video buffer seek timeline frame to activate initial visual thumbnail image capture
+            setTimeout(() => {
+                document.querySelectorAll('.hidden-video-thumb').forEach(v => { v.currentTime = 1; });
+            }, 600);
+        }
+
+        function backToFolders() {
+            document.getElementById('foldersContainer').style.display = 'block';
+            document.getElementById('folderContentContainer').style.display = 'none';
+            document.getElementById('library-view-title').innerText = "📁 Media Folders";
+        }
+
+        function triggerDirectPlayback(streamableBlobUrl, isLibraryPage) {
+            if (isLibraryPage) {
+                const player = document.getElementById('videoPlayer');
+                player.src = streamableBlobUrl;
+                player.style.display = 'block';
+                player.play();
+                player.scrollIntoView({behavior: 'smooth'});
+            } else {
+                switchPage('home');
+                const mainPlayer = document.getElementById('downloadedPlayer');
+                mainPlayer.src = streamableBlobUrl;
+                document.getElementById('recentDownloadBox').style.display = 'block';
+                mainPlayer.play();
+            }
+        }
+
+        // CLIENT-SIDE SEARCH TACTICAL PROCESSING
+        function filterLocalVideos() {
+            const query = document.getElementById('searchBox').value.toLowerCase().trim();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!query) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            
+            const filtered = flatSearchVideoList.filter(f => f.name.toLowerCase().includes(query));
+            renderVideoGrid(filtered, resultsDiv, false);
+        }
+    </script>
+</body>
+</html>
