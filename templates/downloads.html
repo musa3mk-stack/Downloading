@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Downloads - FZ Video Download{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Duk Downloads</h1>
+  <p class="page-sub">Jerin duk bidiyoyin da za a iya sauke kai tsaye.</p>
+</div>
+
+<div class="download-list">
+  {% for video in videos %}
+  <div class="download-row">
+    <div class="download-row-info">
+      <div class="download-row-title">{{ video.title }}</div>
+      <div class="download-row-meta">{{ video.duration }} &middot; {{ video.size_mb }} MB</div>
+    </div>
+    <div class="download-row-actions">
+      <a href="{{ url_for('video_player', video_id=video.id) }}" class="btn-ghost">Kalli</a>
+      <a href="{{ url_for('download_video', video_id=video.id) }}" class="btn-solid">Sauke</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>Babu bidiyo tukuna a jerin.</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

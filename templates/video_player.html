@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }} - FZ Video Download{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('home') }}" class="back-link">&larr; Koma Gida</a>
+
+<div class="player-wrap">
+  <video controls preload="metadata" class="player">
+    <source src="{{ url_for('static', filename='videos/' + video.filename) }}" type="video/mp4">
+    Browser ɗinka ba ya goyon bayan wasan bidiyo a nan.
+  </video>
+</div>
+
+<div class="video-detail-card">
+  <h1>{{ video.title }}</h1>
+  <div class="video-detail-meta">
+    <span>{{ video.duration }}</span>
+    <span>&middot;</span>
+    <span>{{ video.size_mb }} MB</span>
+  </div>
+
+  <a href="{{ url_for('download_video', video_id=video.id) }}" class="download-btn">Sauke Bidiyo</a>
+</div>
+
+{% endblock %}

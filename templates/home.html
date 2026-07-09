@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Gida - FZ Video Download{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Bidiyoyi</h1>
+  <p class="page-sub">Zaɓi bidiyon da kake son kallo ko sauke.</p>
+</div>
+
+<div class="video-grid">
+  {% for video in videos %}
+  <a class="video-card" href="{{ url_for('video_player', video_id=video.id) }}">
+    <div class="thumb-wrap">
+      {% if video.thumbnail %}
+      <img src="{{ url_for('static', filename='thumbnails/' + video.thumbnail) }}" alt="{{ video.title }}" onerror="this.style.display='none'">
+      {% endif %}
+      <span class="play-badge">▶</span>
+      <span class="duration-badge">{{ video.duration }}</span>
+    </div>
+    <div class="video-card-info">
+      <div class="video-card-title">{{ video.title }}</div>
+      <div class="video-card-meta">{{ video.size_mb }} MB</div>
+    </div>
+  </a>
+  {% else %}
+  <div class="empty-state">
+    <p>Babu bidiyo tukuna. Saka fayilolin bidiyo a <code>static/videos/</code> sannan ka ƙara bayaninsu a <code>videos.json</code>.</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

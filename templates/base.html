@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}FZ Video Download{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="{{ url_for('home') }}"><span class="fz">FZ</span><span class="rest">VIDEO DOWNLOAD</span></a>
+  <div class="navlinks">
+    <a href="{{ url_for('home') }}" class="{{ 'active' if active == 'home' else '' }}">Gida</a>
+    <a href="{{ url_for('downloads') }}" class="{{ 'active' if active == 'downloads' else '' }}">Downloads</a>
+  </div>
+</nav>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <div class="copyright">&copy; 2026 FZ Video Download. Duk haƙƙoƙi an kiyaye su.</div>
+</footer>
+
+</body>
+</html>
